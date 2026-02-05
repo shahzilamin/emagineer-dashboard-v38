@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface PillarStat {
@@ -18,6 +19,12 @@ interface TrendHistory {
   trajectory: 'accelerating-decline' | 'stable-fluctuation' | 'recovery-correction' | 'steady-improvement' | 'accelerating-improvement';
 }
 
+export interface LinkedDecision {
+  title: string;
+  confidence: number;
+  urgency: 'today' | 'this-week' | 'this-month';
+}
+
 interface PillarCardProps {
   icon: LucideIcon;
   iconColor: string;
@@ -28,6 +35,7 @@ interface PillarCardProps {
   alertText?: string;
   heroTrend?: HeroTrend;
   trendHistory?: TrendHistory;
+  linkedDecision?: LinkedDecision;
   stats: PillarStat[];
 }
 
@@ -45,6 +53,12 @@ const trajectoryLabels: Record<TrendHistory['trajectory'], { label: string; colo
   'accelerating-improvement': { label: 'accelerating improvement', color: 'text-emerald-600 dark:text-emerald-400' },
 };
 
+const urgencyLabels: Record<string, { label: string; color: string }> = {
+  'today': { label: 'DECIDE TODAY', color: 'text-red-500 dark:text-red-400' },
+  'this-week': { label: 'THIS WEEK', color: 'text-amber-600 dark:text-amber-400' },
+  'this-month': { label: 'THIS MONTH', color: 'text-blue-600 dark:text-blue-400' },
+};
+
 export function PillarCard({
   icon: Icon,
   iconColor,
@@ -55,6 +69,7 @@ export function PillarCard({
   alertText,
   heroTrend,
   trendHistory,
+  linkedDecision,
   stats,
 }: PillarCardProps) {
   const c = statusStyles[status];
@@ -145,6 +160,20 @@ export function PillarCard({
           </div>
         ))}
       </div>
+
+      {/* Linked Decision — diagnosis-to-action bridge (Sol Hero V38) */}
+      {linkedDecision && trendHistory && (trendHistory.trajectory === 'accelerating-decline' || trendHistory.trajectory === 'recovery-correction') && (
+        <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-600">
+          <div className="flex items-center gap-1.5 text-xs text-blue-500 dark:text-blue-400 cursor-pointer hover:underline">
+            <ArrowRight className="w-3 h-3 flex-shrink-0" />
+            <span className="font-medium line-clamp-1">{linkedDecision.title}</span>
+            <span className="tabular-nums flex-shrink-0">({linkedDecision.confidence}%)</span>
+            <span className={clsx('text-xs font-bold flex-shrink-0 ml-auto', urgencyLabels[linkedDecision.urgency]?.color)}>
+              {urgencyLabels[linkedDecision.urgency]?.label}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

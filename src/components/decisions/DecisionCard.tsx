@@ -106,12 +106,60 @@ function MetricPill({ metric }: { metric: SupportingMetric }) {
   );
 }
 
-export function DecisionCard({ decision }: { decision: Decision }) {
+export function DecisionCard({ decision, condensed }: { decision: Decision; condensed?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const urgency = urgencyConfig[decision.urgency];
   const category = categoryConfig[decision.category];
   const UrgencyIcon = urgency.icon;
   const CategoryIcon = category.icon;
+
+  // Condensed mode: compact preview card (Lux Hero V38)
+  if (condensed) {
+    return (
+      <div
+        className={clsx(
+          'bg-white dark:bg-slate-800 rounded-xl border transition-all duration-200',
+          decision.urgency === 'today'
+            ? 'border-red-200 dark:border-red-800 shadow-sm shadow-red-100 dark:shadow-red-900/20'
+            : 'border-slate-200 dark:border-slate-700',
+        )}
+      >
+        <div className="p-4">
+          {/* Header: urgency badge + confidence */}
+          <div className="flex items-center justify-between mb-2">
+            <span className={clsx('flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider', urgency.bg, urgency.color)}>
+              <UrgencyIcon className="w-3 h-3" />
+              {urgency.label}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className={clsx('h-full rounded-full', decision.confidence >= 80 ? 'bg-emerald-500' : decision.confidence >= 60 ? 'bg-amber-500' : 'bg-red-500')}
+                  style={{ width: `${decision.confidence}%` }}
+                />
+              </div>
+              <span className={clsx('text-xs font-bold tabular-nums', decision.confidence >= 80 ? 'text-emerald-500' : decision.confidence >= 60 ? 'text-amber-500' : 'text-red-500')}>
+                {decision.confidence}%
+              </span>
+            </div>
+          </div>
+          {/* Title */}
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1.5">
+            {decision.question}
+          </h3>
+          {/* Description: 2-line clamp */}
+          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-2">
+            {decision.context}
+          </p>
+          {/* Recommendation: inline compact */}
+          <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="line-clamp-1">{decision.recommendation}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -40,14 +40,19 @@ export function SubscriptionQuickStats() {
       <div className="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg backdrop-blur-sm">
         <RefreshCw className="w-4 h-4 text-purple-200 flex-shrink-0" />
         <div className="flex items-center gap-4 overflow-x-auto text-xs">
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="flex items-center gap-1.5 whitespace-nowrap relative group/mrr">
             <span className="text-blue-100">MRR</span>
-            <span className="font-bold tabular-nums text-white">
+            <span className="font-bold tabular-nums text-white cursor-help">
               {formatCurrency(m.mrr, true)}
             </span>
             <span className="text-emerald-300 text-xs">
               +{m.mrrGrowthRate}%
             </span>
+            {/* MRR calculation tooltip (Sol QW3 V38) */}
+            <div className="absolute left-0 top-full mt-2 w-56 bg-slate-900/95 backdrop-blur-sm border border-white/10 rounded-lg p-2.5 opacity-0 group-hover/mrr:opacity-100 pointer-events-none group-hover/mrr:pointer-events-auto transition-opacity duration-200 z-50 shadow-xl">
+              <p className="text-xs text-white font-semibold mb-1">MRR Calculation</p>
+              <p className="text-xs text-slate-300 leading-relaxed">Active subscribers × avg monthly subscription value, including annual plans amortized monthly.</p>
+            </div>
           </div>
 
           <div className="w-px h-4 bg-white/20 flex-shrink-0" />

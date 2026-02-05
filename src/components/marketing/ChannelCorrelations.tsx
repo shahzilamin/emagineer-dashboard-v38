@@ -225,17 +225,50 @@ export function ChannelCorrelations() {
   );
 }
 
-// Compact version for Overview tab - just a summary stat
+// Compact version for Overview tab — expandable with breakdown (Sol QW2 V38)
 export function ChannelCorrelationsBadge() {
+  const [expanded, setExpanded] = useState(false);
+  const strongLinks = channelCorrelations.filter(c => c.correlationStrength >= 0.7);
+  // Estimate hidden rev per link proportionally to strength
+  const totalStrength = strongLinks.reduce((s, c) => s + c.correlationStrength, 0);
+
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800">
-      <Network className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-      <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
-        {correlationSummary.strongCorrelations} strong cross-channel links detected
-      </span>
-      <span className="text-xs text-cyan-600 dark:text-cyan-400">
-        (${(correlationSummary.hiddenRevenue / 1000).toFixed(0)}K hidden rev)
-      </span>
+    <div className="rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 w-full px-3 py-1.5 text-left hover:bg-cyan-100/50 dark:hover:bg-cyan-900/30 transition-colors"
+      >
+        <Network className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
+        <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
+          {correlationSummary.strongCorrelations} strong cross-channel links detected
+        </span>
+        <span className="text-xs text-cyan-600 dark:text-cyan-400">
+          (${(correlationSummary.hiddenRevenue / 1000).toFixed(0)}K hidden rev)
+        </span>
+        <span className="ml-auto flex-shrink-0">
+          {expanded ? <ChevronUp className="w-3.5 h-3.5 text-cyan-500" /> : <ChevronDown className="w-3.5 h-3.5 text-cyan-500" />}
+        </span>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-2.5 pt-1 border-t border-cyan-200 dark:border-cyan-800 space-y-1.5">
+          <p className="text-xs text-cyan-600 dark:text-cyan-400 mb-1">
+            Revenue attributed to one channel but driven by another — reallocating improves ROAS accuracy by ~12%.
+          </p>
+          {strongLinks.map(link => {
+            const share = link.correlationStrength / totalStrength;
+            const estRev = Math.round(correlationSummary.hiddenRevenue * share / 1000);
+            return (
+              <div key={`${link.sourceShort}-${link.targetShort}`} className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-cyan-700 dark:text-cyan-300 w-28">{link.sourceShort} → {link.targetShort}</span>
+                <div className="flex-1 h-1 bg-cyan-200 dark:bg-cyan-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${link.correlationStrength * 100}%` }} />
+                </div>
+                <span className="tabular-nums font-bold text-cyan-700 dark:text-cyan-300 w-10 text-right">~${estRev}K</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

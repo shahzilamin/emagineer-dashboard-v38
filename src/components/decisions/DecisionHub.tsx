@@ -24,11 +24,12 @@ const filters: { id: FilterType; label: string; icon: typeof Zap }[] = [
 interface DecisionHubProps {
   decisions: Decision[];
   displayLimit?: number;
+  condensed?: boolean;
   companyName?: string;
   criticalAlertCount?: number;
 }
 
-export function DecisionHub({ decisions, displayLimit, companyName: _companyName = 'WellBefore', criticalAlertCount = 0 }: DecisionHubProps) {
+export function DecisionHub({ decisions, displayLimit, condensed, companyName: _companyName = 'WellBefore', criticalAlertCount = 0 }: DecisionHubProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const stats = getDecisionStats(decisions);
 
@@ -137,7 +138,7 @@ export function DecisionHub({ decisions, displayLimit, companyName: _companyName
       {displayedDecisions.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {displayedDecisions.map((decision) => (
-            <DecisionCard key={decision.id} decision={decision} />
+            <DecisionCard key={decision.id} decision={decision} condensed={condensed} />
           ))}
         </div>
       ) : (

@@ -120,8 +120,12 @@ export function OverviewTab() {
 
   const criticalInsights = insights.filter((i) => i.type === 'critical');
 
-  // MER status
-  const merStatusColor = currentMER > 4 ? 'text-emerald-600' : currentMER >= 3 ? 'text-amber-600' : 'text-red-600';
+  // MER status (Lux QW3 V38: dark mode variants)
+  const merStatusColor = currentMER > 4
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : currentMER >= 3
+      ? 'text-amber-600 dark:text-amber-400'
+      : 'text-red-600 dark:text-red-400';
   const merIsDecline = merChange < 0;
 
   // Daily pace target for sparkline
@@ -190,9 +194,10 @@ export function OverviewTab() {
   if (fStats.returnRate > fStats.returnBenchmark * 1.2) healthScore = Math.max(0, healthScore - 2);
   if (fStats.costPerOrder > fStats.costPerOrderBenchmark * 1.2) healthScore = Math.max(0, healthScore - 2);
 
-  // Decision urgency counts for button label (Sol QW2)
-  const thisWeekDecisions = allDecisions.filter(d => d.urgency === 'this-week' || d.urgency === 'today').length;
-  const thisMonthDecisions = allDecisions.filter(d => d.urgency === 'this-month').length;
+  // Decision urgency counts for button label — exclusive categories matching tabs (Sol QW1 / Lux QW1 V38)
+  const todayDecisions = allDecisions.filter(d => d.urgency === 'today').length;
+  const weekDecisions = allDecisions.filter(d => d.urgency === 'this-week').length;
+  const monthDecisions = allDecisions.filter(d => d.urgency === 'this-month').length;
 
   // ── Business Pillar composite summary (Lux Hero V36) ──
   const pillarTrends = [
@@ -303,7 +308,7 @@ export function OverviewTab() {
               </span>
             </div>
             <div className="flex items-center gap-1 mt-0.5 text-xs">
-              <span className={metrics.revenue.today.trend === 'up' ? 'text-blue-200' : 'text-red-300'}>
+              <span className="text-blue-100">
                 {metrics.revenue.today.changePercent >= 0 ? '+' : ''}{metrics.revenue.today.changePercent.toFixed(1)}% vs yesterday
               </span>
             </div>
@@ -400,7 +405,7 @@ export function OverviewTab() {
             </button>
           </>
         ) : (
-          <DecisionHub decisions={allDecisions} displayLimit={2} companyName="WellBefore" criticalAlertCount={criticalInsights.length} />
+          <DecisionHub decisions={allDecisions} displayLimit={2} condensed companyName="WellBefore" criticalAlertCount={criticalInsights.length} />
         )}
         {!decisionsExpanded && allDecisions.length > 2 && (
           <button
@@ -408,7 +413,7 @@ export function OverviewTab() {
             className="flex items-center gap-1.5 mt-3 mx-auto px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
           >
             <ChevronDown className="w-4 h-4" />
-            View all {allDecisions.length} decisions ({thisWeekDecisions} this week · {thisMonthDecisions} this month)
+            View all {allDecisions.length} decisions ({todayDecisions} urgent · {weekDecisions} this week · {monthDecisions} this month)
           </button>
         )}
       </div>
@@ -452,6 +457,11 @@ export function OverviewTab() {
                 `${health.avgContributionMargin.value}%`,
               ],
               trajectory: classifyTrajectory(portfolioSummary.twoMonthAgoContributionMargin, portfolioSummary.previousContributionMargin, health.avgContributionMargin.value, true),
+            }}
+            linkedDecision={{
+              title: (productDecision as Decision).question,
+              confidence: (productDecision as Decision).confidence,
+              urgency: (productDecision as Decision).urgency,
             }}
             stats={[
               { label: 'Dead Stock', value: health.deadStockPercent.label, color: health.deadStockPercent.status === 'red' ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-400' },
@@ -506,6 +516,11 @@ export function OverviewTab() {
                 `${runwayMonths}mo`,
               ],
               trajectory: classifyTrajectory(twoMonthAgoRunwayMonths, prevRunwayMonths, runwayMonths, true),
+            }}
+            linkedDecision={{
+              title: allDecisions.find(d => d.id === 'cashflow-negotiate-terms')?.question ?? 'Negotiate supplier terms',
+              confidence: allDecisions.find(d => d.id === 'cashflow-negotiate-terms')?.confidence ?? 78,
+              urgency: allDecisions.find(d => d.id === 'cashflow-negotiate-terms')?.urgency ?? 'this-week',
             }}
             stats={[
               { label: 'Health', value: `${cashHealthScore}/100`, color: cashHealthScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : cashHealthScore >= 60 ? 'text-amber-700 dark:text-amber-400' : 'text-red-600 dark:text-red-400' },
